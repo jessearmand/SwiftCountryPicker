@@ -9,6 +9,9 @@ public struct Country {
     /// Name of the country
     public let name: String!
 
+    /// Native Name of the country
+    public let native: String!
+
     /// ISO country code of the country
     public let iso: String!
 
@@ -98,6 +101,7 @@ public class CountryPicker: UIPickerView {
                 for subJson in countries {
 
                     guard let name = subJson["name"] as? String,
+                        native = subJson["native"] as? String,
                         iso = subJson["code"] as? String,
                         emoji = subJson["emoji"] as? String,
                         dial = subJson["dial"] as? String else {
@@ -108,7 +112,7 @@ public class CountryPicker: UIPickerView {
                     }
 
                     let image = UIImage(named: iso, inBundle: NSBundle(path: bundlePath!)!, compatibleWithTraitCollection: nil)
-                    let country = Country(name: name, iso: iso, emoji: emoji, dial: dial, flag: image)
+                    let country = Country(name: name, native: native, iso: iso, emoji: emoji, dial: dial, flag: image)
 
                     // set current country if it's the local country
                     if country.iso == countryCode {
@@ -139,12 +143,18 @@ extension CountryPicker : UIPickerViewDataSource {
     public func pickerView(pickerView: UIPickerView, viewForRow row: Int, forComponent component: Int, reusingView view: UIView?) -> UIView {
         let flag = countryData[row].flag
         let name = countryData[row].name
+        let native = countryData[row].native
         let dial = countryData[row].dial
 
-        let text = "\(name) +\(dial)"
-        let mutableAttributedText = NSMutableAttributedString(string: text, attributes: [NSFontAttributeName: UIFont.systemFontOfSize(UIFont.labelFontSize())])
-        let range = NSString(string: mutableAttributedText.string).rangeOfString("+\(dial)")
-        mutableAttributedText.setAttributes([NSForegroundColorAttributeName: UIColor.lightGrayColor()], range: range)
+        let text = "\(name) (\(native))\u{202A} +\(dial)\u{202C}"
+
+        let mutableAttributedText = NSMutableAttributedString(string: text)
+
+        let dialRange = NSString(string: mutableAttributedText.string).rangeOfString("+\(dial)")
+        mutableAttributedText.setAttributes(
+            [
+                NSForegroundColorAttributeName: UIColor.lightGrayColor()
+            ], range: dialRange)
 
         let countryNameAndDial = NSAttributedString(attributedString: mutableAttributedText)
 
@@ -160,6 +170,8 @@ extension CountryPicker : UIPickerViewDataSource {
             countryNameLabel.translatesAutoresizingMaskIntoConstraints = false
             countryNameLabel.tag = countryNameTag
             countryNameLabel.attributedText = countryNameAndDial
+            countryNameLabel.adjustsFontSizeToFitWidth = true
+            countryNameLabel.font = UIFont(name: "Helvetica Neue", size: UIFont.labelFontSize())
 
             rowView.addSubview(countryNameLabel)
 
