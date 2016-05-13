@@ -146,7 +146,10 @@ extension CountryPicker : UIPickerViewDataSource {
         let native = countryData[row].native
         let dial = countryData[row].dial
 
-        let text = "\(name) (\(native))\u{202A} +\(dial)\u{202C}"
+        var text = "\(name) (\(native))\u{202A} +\(dial)\u{202C}"
+        if native.isEmpty {
+            text = "\(name) +\(dial)"
+        }
 
         let mutableAttributedText = NSMutableAttributedString(string: text)
 
@@ -171,7 +174,6 @@ extension CountryPicker : UIPickerViewDataSource {
             countryNameLabel.tag = countryNameTag
             countryNameLabel.attributedText = countryNameAndDial
             countryNameLabel.adjustsFontSizeToFitWidth = true
-            countryNameLabel.font = UIFont(name: "Helvetica Neue", size: UIFont.labelFontSize())
 
             rowView.addSubview(countryNameLabel)
 
