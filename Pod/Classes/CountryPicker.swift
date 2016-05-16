@@ -177,12 +177,13 @@ extension CountryPicker : UIPickerViewDataSource {
 
             rowView.addSubview(countryNameLabel)
 
-            let flagWidthOrHeight = 24
+            let flagWidth: CGFloat = 24
             let views = ["flagView": flagView, "countryNameLabel": countryNameLabel]
-            let horizontalFormat = "|-8-[flagView(\(flagWidthOrHeight))]-[countryNameLabel]-|"
+            let horizontalFormat = "|-8-[flagView(\(flagWidth))]-[countryNameLabel]-|"
             let horizontalConstraints = NSLayoutConstraint.constraintsWithVisualFormat(horizontalFormat, options: .AlignAllCenterY, metrics: nil, views: views)
 
-            let verticalFormat = "V:[flagView(\(flagWidthOrHeight))]"
+            let flagHeight: CGFloat = 3/4 * flagWidth
+            let verticalFormat = "V:[flagView(\(flagHeight))]"
             let verticalConstraints = NSLayoutConstraint.constraintsWithVisualFormat(verticalFormat, options: .AlignAllCenterY, metrics: nil, views: ["flagView": flagView])
 
             NSLayoutConstraint.activateConstraints(horizontalConstraints)
