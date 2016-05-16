@@ -23,6 +23,8 @@ public struct Country {
 
     /// Flag image of the country
     public let flag: UIImage!
+
+    public var rank: Int = Int.max
 }
 
 
@@ -48,9 +50,15 @@ public class CountryPicker: UIPickerView {
     /// The delegate for the CountryPicker
     public var countryDelegate: CountryPickerDelegate?
 
+    /// The top country codes that are positioned at the top
+    public var topISOCountryCodes = [String]() {
+        didSet {
+            loadData()
+        }
+    }
+
     /// The Content of the CountryPicker
     private var countryData = [Country]()
-
 
     public override init(frame: CGRect) {
         super.init(frame: frame)
@@ -98,6 +106,7 @@ public class CountryPicker: UIPickerView {
                     return dial.isEmpty == false
                 }
 
+                countryData = []
                 for subJson in countries {
 
                     guard let name = subJson["name"] as? String,
@@ -112,7 +121,7 @@ public class CountryPicker: UIPickerView {
                     }
 
                     let image = UIImage(named: iso, inBundle: NSBundle(path: bundlePath!)!, compatibleWithTraitCollection: nil)
-                    let country = Country(name: name, native: native, iso: iso, emoji: emoji, dial: dial, flag: image)
+                    var country = Country(name: name, native: native, iso: iso, emoji: emoji, dial: dial, flag: image, rank: Int.max)
 
                     // set current country if it's the local country
                     if country.iso == countryCode {
@@ -120,10 +129,20 @@ public class CountryPicker: UIPickerView {
                     }
 
                     // append country
+                    if let topCountryIndex = topISOCountryCodes.indexOf(country.iso) {
+                        country.rank = topCountryIndex
+                    }
+
                     countryData.append(country)
                 }
 
-                countryData.sortInPlace { $1.name > $0.name }
+                countryData.sortInPlace {
+                    if $1.rank == Int.max && $0.rank == Int.max {
+                        return $1.name > $0.name
+                    } else {
+                        return $1.rank > $0.rank
+                    }
+                }
                 self.reloadAllComponents()
 
             } catch {

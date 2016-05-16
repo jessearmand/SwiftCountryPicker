@@ -10,8 +10,8 @@ import UIKit
 import SwiftCountryPicker
 
 class ViewController: UIViewController {
-    
-    var textField : UITextField! {
+
+    var textField: UITextField! {
         didSet {
             textField.center = view.center
             textField.textAlignment = .Center
@@ -22,23 +22,22 @@ class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         // Note: you don't have to set a proper origin for the CountryPicker
         // if you're going to use it as an inputView. It will be positioned at the
         // bottom of the screen by default.
-        let countryPicker = CountryPicker(frame: CGRectMake(0,0,self.view.frame.size.width, 216))
+        let countryPicker = CountryPicker(frame: CGRectMake(0, 0, self.view.frame.size.width, 216))
         countryPicker.countryDelegate = self
-        
-        
-        
-        textField = UITextField(frame: CGRectMake(0,0,40,30))
+        countryPicker.topISOCountryCodes = ["US", "GB", "ES", "SG"]
+
+        textField = UITextField(frame: CGRect(x: 0, y: 0, width: 40, height: 30))
         textField.inputView = countryPicker
         view.addSubview(textField)
-        
+
         // Show the country code from NSlocale by default
         textField.text = countryPicker.pickedCountry?.iso
-        
-    
+
+
     }
 
     override func didReceiveMemoryWarning() {
