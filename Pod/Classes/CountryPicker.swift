@@ -242,3 +242,19 @@ extension CountryPicker : UIPickerViewDelegate {
     }
 
 }
+
+extension CountryPicker {
+
+    public func country(withName name: String) -> Country? {
+        let matchedCountries = countryData.filter { (country) -> Bool in
+            return country.name == name
+        }
+
+        return matchedCountries.first
+    }
+
+    public func country(atRow row: Int) -> Country {
+        return countryData[row]
+    }
+
+}
