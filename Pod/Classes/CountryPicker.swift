@@ -110,10 +110,10 @@ public class CountryPicker: UIPickerView {
                 for subJson in countries {
 
                     guard let name = subJson["name"] as? String,
-                        native = subJson["native"] as? String,
-                        iso = subJson["code"] as? String,
-                        emoji = subJson["emoji"] as? String,
-                        dial = subJson["dial"] as? String else {
+                        let native = subJson["native"] as? String,
+                        let iso = subJson["code"] as? String,
+                        let emoji = subJson["emoji"] as? String,
+                        let dial = subJson["dial"] as? String else {
 
                         print("couldn't parse json")
 
@@ -244,6 +244,14 @@ extension CountryPicker : UIPickerViewDelegate {
 }
 
 extension CountryPicker {
+
+    public func country(withDialNumber dial: String) -> Country? {
+        let matchedCountries = countryData.filter { (country) -> Bool in
+            return country.dial == dial
+        }
+
+        return matchedCountries.first
+    }
 
     public func country(withName name: String) -> Country? {
         let matchedCountries = countryData.filter { (country) -> Bool in
