@@ -7,22 +7,22 @@
 public struct Country {
 
     /// Name of the country
-    public let name: String!
+    public let name: String
 
     /// Native Name of the country
-    public let native: String!
+    public let native: String
 
     /// ISO country code of the country
-    public let iso: String!
+    public let iso: String
 
     /// Emoji flag of the country
-    public let emoji: String!
+    public let emoji: String
 
     /// Dialing code of the country
-    public let dial: String!
+    public let dial: String
 
     /// Flag image of the country
-    public let flag: UIImage!
+    public let flag: UIImage?
 
     public var rank: Int = Int.max
 }
@@ -36,36 +36,36 @@ public protocol CountryPickerDelegate: UIPickerViewDelegate {
      - parameter picker:  An object representing the CounrtyPicker requesting the data.
      - parameter country: The Selected Country
      */
-    func countryPicker(picker: CountryPicker, didSelectCountry country: Country)
+    func countryPicker(_ picker: CountryPicker, didSelectCountry country: Country)
 }
 
 /**
  The CountryPicker class uses a custom subclass of UIPickerView to display country names and flags (emoji flags) in a slot machine interface. The user can choose a pick a country.
 */
-public class CountryPicker: UIPickerView {
-
+open class CountryPicker : UIPickerView {
+  
     /// The current picked Country
-    public var pickedCountry: Country?
-
+    open var pickedCountry : Country?
+    
     /// The delegate for the CountryPicker
-    public var countryDelegate: CountryPickerDelegate?
+    open var countryDelegate : CountryPickerDelegate?
 
     /// The top country codes that are positioned at the top
-    public var topISOCountryCodes = [String]() {
+    open var topISOCountryCodes = [String]() {
         didSet {
             loadData()
         }
     }
-
+    
     /// The Content of the CountryPicker
-    private var countryData = [Country]()
-
+    internal var countryData = [Country]()
+    
     public override init(frame: CGRect) {
         super.init(frame: frame)
         self.dataSource = self
         self.delegate = self
 
-        self.backgroundColor = .whiteColor()
+        self.backgroundColor = .white
 
         loadData()
     }
@@ -77,80 +77,91 @@ public class CountryPicker: UIPickerView {
     /**
      Loads content from .json file
      */
-    private func loadData() {
-        let bundlePath = NSBundle(forClass: CountryPicker.self).pathForResource("SwiftCountryPicker", ofType: "bundle")
+    fileprivate func loadData() {
+        guard let bundleUrl = Bundle(for: CountryPicker.self).url(forResource: "SwiftCountryPicker", withExtension: "bundle") else {
+            print("Could not find SwiftCountryPicker.bundle")
+            return
+        }
+        
+        let bundle = Bundle(url: bundleUrl)
+        guard let url = bundle?.url(forResource: "EmojiCountryCodes", withExtension: "json") else {
+            print("Could not find EmojiCountryCodes.json")
+            return
+        }
+        
+        do {
+            let jsonData = try Data(contentsOf: url, options: .mappedIfSafe)
+            let json = try JSONSerialization.jsonObject(with: jsonData, options: .allowFragments)
+            
+            var countryCode: String?
 
-        if let path = NSBundle(path: bundlePath!)!.pathForResource("EmojiCountryCodes", ofType: "json") {
+            if let local = (Locale.current as NSLocale).object(forKey: NSLocale.Key.countryCode) as? String {
+                countryCode = local
+            }
 
-            do {
-                let jsonData = try NSData(contentsOfFile: path, options: .DataReadingMappedIfSafe)
-                let json = try NSJSONSerialization.JSONObjectWithData(jsonData, options: .AllowFragments)
-
-                var countryCode: String?
-
-                if let local = NSLocale.currentLocale().objectForKey(NSLocaleCountryCode) as? String {
-                    countryCode = local
+            guard let rawCountries = json as? NSArray else {
+                print("countries is not an array")
+                return
+            }
+            
+            let countries = rawCountries.filter { element in
+                guard let country = element as? [String: String] else {
+                    return false
                 }
 
-
-                guard let rawCountries = json as? NSArray else {
-                    print("countries is not an array")
-                    return
+                guard let dial = country["dial"] else {
+                    return false
+                }
+                
+                return dial.isEmpty == false
+            }
+            
+            countryData = []
+            for element in countries {
+                guard let subJson = element as? [String: String] else {
+                    break
                 }
 
-                let countries = rawCountries.filter { country in
-                    guard let dial = country["dial"] as? String else {
-                        return false
-                    }
-
-                    return dial.isEmpty == false
-                }
-
-                countryData = []
-                for subJson in countries {
-
-                    guard let name = subJson["name"] as? String,
-                        let native = subJson["native"] as? String,
-                        let iso = subJson["code"] as? String,
-                        let emoji = subJson["emoji"] as? String,
-                        let dial = subJson["dial"] as? String else {
+                guard let name = subJson["name"],
+                    let native = subJson["native"],
+                    let iso = subJson["code"],
+                    let emoji = subJson["emoji"],
+                    let dial = subJson["dial"] else {
 
                         print("couldn't parse json")
-
+                        
                         break
-                    }
-
-                    let image = UIImage(named: iso, inBundle: NSBundle(path: bundlePath!)!, compatibleWithTraitCollection: nil)
-                    var country = Country(name: name, native: native, iso: iso, emoji: emoji, dial: dial, flag: image, rank: Int.max)
-
-                    // set current country if it's the local country
-                    if country.iso == countryCode {
-                        pickedCountry = country
-                    }
-
-                    // append country
-                    if let topCountryIndex = topISOCountryCodes.indexOf(country.iso) {
-                        country.rank = topCountryIndex
-                    }
-
-                    countryData.append(country)
                 }
 
-                countryData.sortInPlace {
-                    if $1.rank == Int.max && $0.rank == Int.max {
-                        return $1.name > $0.name
-                    } else {
-                        return $1.rank > $0.rank
-                    }
+                let image = UIImage(named: iso, in: bundle, compatibleWith: nil)
+                var country = Country(name: name, native: native, iso: iso, emoji: emoji, dial: dial, flag: image, rank: Int.max)
+                
+                // set current country if it's the local country
+                if country.iso == countryCode {
+                    pickedCountry = country
                 }
-                self.reloadAllComponents()
+                
+                // append country
+                if let topCountryIndex = topISOCountryCodes.index(of: country.iso) {
+                    country.rank = topCountryIndex
+                }
 
-            } catch {
-                print("error reading file")
-
+                countryData.append(country)
             }
+            
+            countryData.sort {
+                if $1.rank == Int.max && $0.rank == Int.max {
+                    return $1.name > $0.name
+                } else {
+                    return $1.rank > $0.rank
+                }
+            }
+            self.reloadAllComponents()
+            
+        } catch {
+            print("error reading file")
         }
-
+        
     }
 }
 
@@ -172,10 +183,10 @@ extension CountryPicker : UIPickerViewDataSource {
 
         let mutableAttributedText = NSMutableAttributedString(string: text)
 
-        let dialRange = NSString(string: mutableAttributedText.string).rangeOfString("+\(dial)")
+        let dialRange = NSString(string: mutableAttributedText.string).range(of: "+\(dial)")
         mutableAttributedText.setAttributes(
             [
-                NSForegroundColorAttributeName: UIColor.lightGrayColor()
+                NSForegroundColorAttributeName: UIColor.lightGray
             ], range: dialRange)
 
         let countryNameAndDial = NSAttributedString(attributedString: mutableAttributedText)
@@ -199,14 +210,14 @@ extension CountryPicker : UIPickerViewDataSource {
             let flagWidth: CGFloat = 24
             let views = ["flagView": flagView, "countryNameLabel": countryNameLabel]
             let horizontalFormat = "|-8-[flagView(\(flagWidth))]-[countryNameLabel]-|"
-            let horizontalConstraints = NSLayoutConstraint.constraintsWithVisualFormat(horizontalFormat, options: .AlignAllCenterY, metrics: nil, views: views)
+            let horizontalConstraints = NSLayoutConstraint.constraints(withVisualFormat: horizontalFormat, options: .alignAllCenterY, metrics: nil, views: views)
 
             let flagHeight: CGFloat = 3/4 * flagWidth
             let verticalFormat = "V:[flagView(\(flagHeight))]"
-            let verticalConstraints = NSLayoutConstraint.constraintsWithVisualFormat(verticalFormat, options: .AlignAllCenterY, metrics: nil, views: ["flagView": flagView])
+            let verticalConstraints = NSLayoutConstraint.constraints(withVisualFormat: verticalFormat, options: .alignAllCenterY, metrics: nil, views: ["flagView": flagView])
 
-            NSLayoutConstraint.activateConstraints(horizontalConstraints)
-            NSLayoutConstraint.activateConstraints(verticalConstraints)
+            NSLayoutConstraint.activate(horizontalConstraints)
+            NSLayoutConstraint.activate(verticalConstraints)
 
             return rowView
         }
@@ -226,7 +237,15 @@ extension CountryPicker : UIPickerViewDataSource {
         return countryData.count
     }
 
-    public func numberOfComponentsInPickerView(pickerView: UIPickerView) -> Int {
+    public func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        return "\(countryData[row].emoji.description) - \(countryData[row].name.description)"
+    }
+    
+    public func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return countryData.count
+    }
+    
+    public func numberOfComponents(in pickerView: UIPickerView) -> Int {
         return 1
     }
 
@@ -234,7 +253,7 @@ extension CountryPicker : UIPickerViewDataSource {
 
 extension CountryPicker : UIPickerViewDelegate {
 
-    public func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+    public func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         pickedCountry = countryData[row]
         if let countryDelegate = self.countryDelegate {
             countryDelegate.countryPicker(self, didSelectCountry: countryData[row])

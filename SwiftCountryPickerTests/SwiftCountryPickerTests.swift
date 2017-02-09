@@ -1,7 +1,15 @@
-import UIKit
-import XCTest
+//
+//  SwiftCountryPickerTests.swift
+//  SwiftCountryPickerTests
+//
+//  Created by Samuel Beek on 06/01/2017.
+//  Copyright © 2017 Samuel Beek. All rights reserved.
+//
 
-class Tests: XCTestCase {
+import XCTest
+@testable import SwiftCountryPicker
+
+class SwiftCountryPickerTests: XCTestCase {
     
     override func setUp() {
         super.setUp()
@@ -13,14 +21,16 @@ class Tests: XCTestCase {
         super.tearDown()
     }
     
-    func testExample() {
+    func testCountryPicker() {
         // This is an example of a functional test case.
-        XCTAssert(true, "Pass")
+        // Use XCTAssert and related functions to verify your tests produce the correct results
+        let countryPicker = CountryPicker(frame: CGRect.zero)
+        XCTAssertTrue(countryPicker.countryData.count > 0, "CountryData isn't loaded")
     }
     
     func testPerformanceExample() {
         // This is an example of a performance test case.
-        self.measure() {
+        self.measure {
             // Put the code you want to measure the time of here.
         }
     }
