@@ -165,12 +165,23 @@ open class CountryPicker : UIPickerView {
     }
 }
 
-extension CountryPicker : UIPickerViewDataSource {
+extension CountryPicker: UIPickerViewDataSource {
 
+    public func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return countryData.count
+    }
+
+    public func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1
+    }
+
+}
+
+extension CountryPicker : UIPickerViewDelegate {
     var flagTag: Int { return 1 }
     var countryNameTag: Int { return 2 }
 
-    public func pickerView(pickerView: UIPickerView, viewForRow row: Int, forComponent component: Int, reusingView view: UIView?) -> UIView {
+    public func pickerView(_ pickerView: UIPickerView, viewForRow row: Int, forComponent component: Int, reusing view: UIView?) -> UIView {
         let flag = countryData[row].flag
         let name = countryData[row].name
         let native = countryData[row].native
@@ -232,26 +243,6 @@ extension CountryPicker : UIPickerViewDataSource {
 
         return rowView
     }
-
-    public func pickerView(pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        return countryData.count
-    }
-
-    public func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        return "\(countryData[row].emoji.description) - \(countryData[row].name.description)"
-    }
-    
-    public func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        return countryData.count
-    }
-    
-    public func numberOfComponents(in pickerView: UIPickerView) -> Int {
-        return 1
-    }
-
-}
-
-extension CountryPicker : UIPickerViewDelegate {
 
     public func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         pickedCountry = countryData[row]

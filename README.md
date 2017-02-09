@@ -1,6 +1,6 @@
 # SwiftCountryPicker
 
-![Image](http://i.imgur.com/ZGjTtoX.png)
+![Image](Example/flagimages-screenshot.png)
 
 [![CI Status](http://img.shields.io/travis/Samuel Beek/SwiftCountryPicker.svg?style=flat)](https://travis-ci.org/Samuel Beek/SwiftCountryPicker)
 [![Version](https://img.shields.io/cocoapods/v/SwiftCountryPicker.svg?style=flat)](http://cocoapods.org/pods/SwiftCountryPicker)
