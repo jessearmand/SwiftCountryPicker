@@ -197,7 +197,7 @@ extension CountryPicker : UIPickerViewDelegate {
         let dialRange = NSString(string: mutableAttributedText.string).range(of: "+\(dial)")
         mutableAttributedText.setAttributes(
             [
-                NSForegroundColorAttributeName: UIColor.lightGray
+                NSAttributedStringKey.foregroundColor: UIColor.lightGray
             ], range: dialRange)
 
         let countryNameAndDial = NSAttributedString(attributedString: mutableAttributedText)
